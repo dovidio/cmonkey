@@ -12,15 +12,18 @@ $(shell mkdir -p $(OBJDIR))
 MAIN_OBJECTS=$(MAIN_SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 TEST_OBJECTS=$(TEST_SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
-.PHONY: all clean test
+.PHONY: all clean test run
 
 all: monkey
 
 monkey: $(MAIN_OBJECTS)
-	@echo "Note: main.c not implemented yet"
+	$(CC) $(CFLAGS) -o $@ $^
 
 test: lexer-test
 	./lexer-test
+
+run: monkey
+	./monkey
 
 lexer-test: $(TEST_OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
@@ -34,6 +37,8 @@ clean:
 
 $(OBJDIR)/lexer.o: lexer.c lexer.h
 $(OBJDIR)/lexer-test.o: lexer-test.c lexer.h
+$(OBJDIR)/repl.o: repl.c repl.h lexer.h
+$(OBJDIR)/main.o: main.c repl.h
 
 .PHONY: help
 help:

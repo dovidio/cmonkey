@@ -9,6 +9,7 @@ obj/
 lexer-test
 monkey
 debug
+main
 
 # OS generated files
 .DS_Store
