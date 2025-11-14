@@ -27,6 +27,17 @@ Node *new_let_statement_node(Token token) {
   return node;
 }
 
+Node* new_return_statement_node(Token token) {
+    Node* node = ALLOCATE(Node, 1);
+    
+    node->type = NODE_RETURN_STATEMENT;
+    ReturnStatement* stmt = AS_RETURN_STATEMENT(node);
+    stmt->token = token;
+    stmt->return_value = NULL;
+    
+    return node;
+}
+
 Node *new_identifier_node(Token token) {
   Node *node = ALLOCATE(Node, 1);
 

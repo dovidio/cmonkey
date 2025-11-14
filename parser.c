@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "ast.h"
 #include "lexer.h"
 #include "memory.h"
 #include <stdio.h>
@@ -9,6 +10,7 @@ static Parser parser;
 
 static Node *parse_statement();
 static Node *parse_let_statement();
+static Node *parse_return_statement();
 static const char *token_type_string(TokenType type);
 
 void init_parser(const char *input) {
@@ -144,6 +146,8 @@ static Node *parse_statement() {
   switch (parser.current_token.type) {
   case TOKEN_LET:
     return parse_let_statement();
+  case TOKEN_RETURN:
+    return parse_return_statement();
   default:
     return NULL;
   }
@@ -173,4 +177,15 @@ static Node *parse_let_statement() {
   }
 
   return stmt_node;
+}
+
+static Node *parse_return_statement() {
+  Node *return_statement = new_return_statement_node(parser.current_token);
+
+  while (parser.current_token.type != TOKEN_SEMICOLON &&
+         parser.current_token.type != TOKEN_EOF) {
+    next_token_parser();
+  }
+
+  return return_statement;
 }

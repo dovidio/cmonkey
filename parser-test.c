@@ -85,10 +85,47 @@ static void test_let_statements(void **state) {
   }
 }
 
-int main(void) {
-  const struct CMUnitTest tests[] = {
-      cmocka_unit_test(test_let_statements),
-  };
+static void test_return_statements(void **state) {
+    (void)state;
 
-  return cmocka_run_group_tests(tests, NULL, NULL);
+    const char *input = "return 5;\n"
+                       "return true;\n" 
+                       "return foobar;";
+
+    init_parser(input);
+    Node *program_node = parse_program();
+    
+    checkParseErrors();
+    
+    assert_non_null(program_node);
+    
+    if (!IS_PROGRAM(program_node)) {
+        fail_msg("ParseProgram() did not return a program node");
+    }
+
+    Program *program = AS_PROGRAM(program_node);
+    if (program->statement_count != 3) {
+        fail_msg("program.Statements does not contain 3 statements. got=%d", 
+                 program->statement_count);
+    }
+
+    for (int i = 0; i < 3; i++) {
+        Node* stmt = program->statements[i];
+        if (!IS_RETURN_STATEMENT(stmt)) {
+            fail_msg("Statement %d is not a return statement", i);
+        }
+        
+        ReturnStatement* return_stmt = AS_RETURN_STATEMENT(stmt);
+        // We'll add return value testing later when we implement expressions
+        (void)return_stmt; // Suppress unused variable warning
+    }
+}
+
+int main(void) {
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test(test_let_statements),
+        cmocka_unit_test(test_return_statements),
+    };
+
+    return cmocka_run_group_tests(tests, NULL, NULL);
 }
