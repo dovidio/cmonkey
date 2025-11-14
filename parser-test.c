@@ -17,29 +17,72 @@ static void checkParseErrors() {
     return;
   }
 
-  printf("Parser has %d %s:\n", error_count,
+  fprintf(stderr, "Parser has %d %s:\n", error_count,
          error_count == 1 ? "error" : "errors");
 
   for (int i = 0; i < error_count; i++) {
-    printf("\t%s\n", errors[i].message);
+    fprintf(stderr, "\t%s\n", errors[i].message);
   }
 
-  fail();
+  fail_msg("Parser encountered errors (see stderr for details)");
+}
+
+static int testLetStatement(Node* stmt, const char* name) {
+    if (!IS_LET_STATEMENT(stmt)) {
+        printf("Statement is not a let statement\n");
+        return 0;
+    }
+    
+    LetStatement* let_stmt = AS_LET_STATEMENT(stmt);
+    if (let_stmt->name == NULL) {
+        printf("Let statement name is NULL\n");
+        return 0;
+    }
+    
+    char actual_name[256];
+    snprintf(actual_name, sizeof(actual_name), "%.*s", 
+             let_stmt->name->length, let_stmt->name->start);
+    
+    if (strcmp(actual_name, name) != 0) {
+        printf("Let statement name not '%s'. got=%s\n", name, actual_name);
+        return 0;
+    }
+    
+    return 1;
 }
 
 static void test_let_statements(void **state) {
   (void)state;
 
-  const char *input = "let x = 5;\n"  // Missing = sign
-                      "let y = 10;\n" // Missing identifier
-                      "let foobar = 838383;";
+  const char *input = "let x = 5;\n"
+                     "let y = 10;\n"
+                     "let foobar = 838383;";
 
   init_parser(input);
   Node *program_node = parse_program();
-
-  printf("Statement count: %d\n", AS_PROGRAM(program_node)->statement_count);
-
+  
   checkParseErrors();
+  
+  assert_non_null(program_node);
+  
+  if (!IS_PROGRAM(program_node)) {
+      fail_msg("ParseProgram() did not return a program node");
+  }
+
+  Program *program = AS_PROGRAM(program_node);
+  if (program->statement_count != 3) {
+      fail_msg("program.Statements does not contain 3 statements. got=%d", 
+               program->statement_count);
+  }
+
+  const char* expected_identifiers[] = {"x", "y", "foobar"};
+
+  for (int i = 0; i < 3; i++) {
+      Node* stmt = program->statements[i];
+      if (!testLetStatement(stmt, expected_identifiers[i])) {
+          fail_msg("testLetStatement failed for identifier '%s'", expected_identifiers[i]);
+      }
+  }
 }
 
 int main(void) {
