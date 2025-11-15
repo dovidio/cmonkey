@@ -11,7 +11,6 @@ static Parser parser;
 static Node *parse_statement();
 static Node *parse_let_statement();
 static Node *parse_return_statement();
-static const char *token_type_string(TokenType type);
 
 void init_parser(const char *input) {
   init_lexer(input);
@@ -51,7 +50,8 @@ void peek_error(TokenType type) {
   error->message = ALLOCATE(char, 256);
 
   snprintf(error->message, 256, "expected next token to be %s, got %s instead",
-           token_type_string(type), token_type_string(parser.peek_token.type));
+           token_type_to_string(type),
+           token_type_to_string(parser.peek_token.type));
 
   parser.error_count++;
 }
@@ -59,73 +59,6 @@ void peek_error(TokenType type) {
 ParseError *get_errors(int *count) {
   *count = parser.error_count;
   return parser.errors;
-}
-
-static const char *token_type_string(TokenType type) {
-  switch (type) {
-  case TOKEN_ILLEGAL:
-    return "ILLEGAL";
-  case TOKEN_EOF:
-    return "EOF";
-  case TOKEN_IDENT:
-    return "IDENT";
-  case TOKEN_INT:
-    return "INT";
-  case TOKEN_STRING:
-    return "STRING";
-  case TOKEN_ASSIGN:
-    return "=";
-  case TOKEN_PLUS:
-    return "+";
-  case TOKEN_MINUS:
-    return "-";
-  case TOKEN_BANG:
-    return "!";
-  case TOKEN_ASTERISK:
-    return "*";
-  case TOKEN_SLASH:
-    return "/";
-  case TOKEN_LT:
-    return "<";
-  case TOKEN_GT:
-    return ">";
-  case TOKEN_EQ:
-    return "==";
-  case TOKEN_NOT_EQ:
-    return "!=";
-  case TOKEN_COMMA:
-    return ",";
-  case TOKEN_SEMICOLON:
-    return ";";
-  case TOKEN_LPAREN:
-    return "(";
-  case TOKEN_RPAREN:
-    return ")";
-  case TOKEN_LBRACE:
-    return "{";
-  case TOKEN_RBRACE:
-    return "}";
-  case TOKEN_LBRACKET:
-    return "[";
-  case TOKEN_RBRACKET:
-    return "]";
-  case TOKEN_FUNCTION:
-    return "FUNCTION";
-  case TOKEN_LET:
-    return "LET";
-  case TOKEN_TRUE:
-    return "TRUE";
-  case TOKEN_FALSE:
-    return "FALSE";
-  case TOKEN_IF:
-    return "IF";
-  case TOKEN_ELSE:
-    return "ELSE";
-  case TOKEN_RETURN:
-    return "RETURN";
-  default:
-    return "UNKNOWN";
-  }
 }
 
 Node *parse_program() {
