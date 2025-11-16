@@ -45,8 +45,6 @@ Node *new_identifier_node(Token token) {
   node->type = NODE_IDENTIFIER;
   Identifier *ident = AS_IDENTIFIER(node);
   ident->token = token;
-  ident->start = token.start;
-  ident->length = token.length;
 
   return node;
 }
@@ -144,7 +142,8 @@ sds node_to_string(Node *node) {
   case NODE_LET_STATEMENT: {
     LetStatement *letStatement = AS_LET_STATEMENT(node);
     sds s = sdsnewlen(letStatement->token.start, letStatement->token.length);
-    s = sdscatlen(s, letStatement->name->start, letStatement->name->length);
+    s = sdscat(s, " ");
+    s = sdscat(s, letStatement->name->token.literal);
     s = sdscat(s, " = ");
     if (letStatement->value != NULL) {
       s = sdscat(s, node_to_string(letStatement->value));
@@ -164,7 +163,7 @@ sds node_to_string(Node *node) {
   }
   case NODE_IDENTIFIER: {
     Identifier *identifier = AS_IDENTIFIER(node);
-    sds s = sdsnewlen(identifier->start, identifier->length);
+    sds s = sdsnew(identifier->token.literal);
     return s;
   }
   case NODE_EXPRESSION_STATEMENT: {
@@ -177,12 +176,7 @@ sds node_to_string(Node *node) {
   }
 }
 
-void add_statement(Node *program_node, Node *statement) {
-  if (!IS_PROGRAM(program_node))
-    return;
-
-  Program *program = AS_PROGRAM(program_node);
-
+void add_statement(Program *program, Node *statement) {
   if (program->statement_count >= program->statement_capacity) {
     int old_capacity = program->statement_capacity;
     program->statement_capacity = GROW_CAPACITY(old_capacity);

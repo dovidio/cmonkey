@@ -67,7 +67,7 @@ Node *parse_program() {
   while (parser.current_token.type != TOKEN_EOF) {
     Node *statement = parse_statement();
     if (statement) {
-      add_statement(program_node, statement);
+      add_statement(AS_PROGRAM(program_node), statement);
     }
     next_token_parser();
   }

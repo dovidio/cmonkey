@@ -1,27 +1,25 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -std=c99 -g $(shell pkg-config --cflags cmocka)
 LDFLAGS=$(shell pkg-config --libs cmocka)
-SRCDIR=.
 OBJDIR=obj
-SOURCES=$(wildcard $(SRCDIR)/*.c)
-MAIN_SOURCES=$(filter-out $(SRCDIR)/lexer-test.c $(SRCDIR)/parser-test.c, $(SOURCES))
-LEXER_TEST_SOURCES=$(filter-out $(SRCDIR)/main.c $(SRCDIR)/parser-test.c, $(SOURCES))
-PARSER_TEST_SOURCES=$(filter-out $(SRCDIR)/main.c $(SRCDIR)/lexer-test.c, $(SOURCES))
 
+# Core library sources (no main functions)
+LIB_SOURCES=lexer.c parser.c ast.c repl.c memory.c sds.c
+LIB_OBJECTS=$(LIB_SOURCES:%.c=$(OBJDIR)/%.o)
+
+# Create obj directory if it doesn't exist
 $(shell mkdir -p $(OBJDIR))
 
-MAIN_OBJECTS=$(MAIN_SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
-LEXER_TEST_OBJECTS=$(LEXER_TEST_SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
-PARSER_TEST_OBJECTS=$(PARSER_TEST_SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
-
-.PHONY: all clean test run test-lexer test-parser
+.PHONY: all clean test test-lexer test-parser test-ast help
 
 all: monkey
 
-monkey: $(MAIN_OBJECTS)
+# Main executable
+monkey: $(LIB_OBJECTS) $(OBJDIR)/main.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-test: test-lexer test-parser
+# Test targets
+test: test-lexer test-parser test-ast
 
 test-lexer: lexer-test
 	./lexer-test
@@ -29,29 +27,35 @@ test-lexer: lexer-test
 test-parser: parser-test
 	./parser-test
 
-lexer-test: $(LEXER_TEST_OBJECTS)
+test-ast: ast-test
+	./ast-test
+
+# Test executables
+lexer-test: $(LIB_OBJECTS) $(OBJDIR)/lexer-test.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-parser-test: $(PARSER_TEST_OBJECTS)
+parser-test: $(LIB_OBJECTS) $(OBJDIR)/parser-test.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
+ast-test: $(LIB_OBJECTS) $(OBJDIR)/ast-test.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+# Object file compilation rule
+$(OBJDIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Clean up build artifacts
 clean:
 	rm -rf $(OBJDIR)
-	rm -f lexer-test monkey
+	rm -f lexer-test parser-test ast-test monkey
 
-$(OBJDIR)/lexer.o: lexer.c lexer.h
-$(OBJDIR)/lexer-test.o: lexer-test.c lexer.h
-$(OBJDIR)/repl.o: repl.c repl.h lexer.h
-$(OBJDIR)/main.o: main.c repl.h
-
-.PHONY: help
+# Help target
 help:
 	@echo "Available targets:"
-	@echo "  all        - Build the main executable (not implemented yet)"
-	@echo "  test       - Build and run tests with CMocka test framework"
-	@echo "  lexer-test - Build test executable"
+	@echo "  all        - Build the main executable"
+	@echo "  test       - Run all tests"
+	@echo "  test-lexer - Run lexer tests"
+	@echo "  test-parser - Run parser tests" 
+	@echo "  test-ast   - Run AST tests"
 	@echo "  clean      - Remove build artifacts"
 	@echo "  help       - Show this help message"

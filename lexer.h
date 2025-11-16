@@ -1,6 +1,8 @@
 #ifndef lexer_h
 #define lexer_h
 
+#import "sds.h"
+
 typedef enum {
     TOKEN_ILLEGAL,
     TOKEN_EOF,
@@ -43,6 +45,7 @@ typedef enum {
 
 typedef struct {
     TokenType type;
+    sds literal;
     const char* start;
     int length;
     int line;
@@ -58,5 +61,6 @@ typedef struct {
 
 void init_lexer(const char* input);
 Token next_token();
+Token make_token(TokenType type, const char *start, int length, int line);
 
 #endif

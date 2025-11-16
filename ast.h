@@ -21,8 +21,6 @@ typedef struct Identifier Identifier;
 
 struct Identifier {
     Token token;
-    const char* start;
-    int length;
 };
 
 struct LetStatement {
@@ -75,6 +73,6 @@ Node* new_return_statement_node(Token token);
 Node* new_identifier_node(Token token);
 sds node_to_string(Node *node);
 const char *token_type_to_string(TokenType type);
-void add_statement(Node* program_node, Node* statement);
+void add_statement(Program *program, Node* statement);
 
 #endif
