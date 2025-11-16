@@ -141,7 +141,7 @@ sds node_to_string(Node *node) {
   }
   case NODE_LET_STATEMENT: {
     LetStatement *letStatement = AS_LET_STATEMENT(node);
-    sds s = sdsnewlen(letStatement->token.start, letStatement->token.length);
+    sds s = sdsnew(letStatement->token.literal);
     s = sdscat(s, " ");
     s = sdscat(s, letStatement->name->token.literal);
     s = sdscat(s, " = ");

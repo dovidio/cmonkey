@@ -64,8 +64,8 @@ void start_repl(FILE *input, FILE *output) {
         break;
       }
 
-      fprintf(output, "{Type: %s Literal: %.*s}\n", token_names[token.type],
-              token.length, token.start);
+      fprintf(output, "{Type: %s Literal: %s}\n", token_names[token.type],
+              token.literal);
     }
   }
 }

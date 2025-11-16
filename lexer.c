@@ -48,8 +48,6 @@ Token make_token(TokenType type, const char *start, int length, int line) {
   Token token;
   token.type = type;
   token.literal = sdsnewlen(start, length);
-  token.start = start;
-  token.length = length;
   token.line = line;
   return token;
 }

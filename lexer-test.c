@@ -1,10 +1,11 @@
+#include "lexer.h"
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
 #include <stdio.h>
 #include <string.h>
+
 #include <cmocka.h>
-#include "lexer.h"
 
 typedef struct {
   TokenType expected_type;
@@ -90,11 +91,7 @@ static void test_next_token(void **state) {
 
     assert_int_equal(token.type, tests[i].expected_type);
     assert_int_equal(token.line, tests[i].expected_line);
-
-    char actual_literal[256];
-    snprintf(actual_literal, sizeof(actual_literal), "%.*s", token.length,
-             token.start);
-    assert_string_equal(actual_literal, tests[i].expected_literal);
+    assert_string_equal(token.literal, tests[i].expected_literal);
   }
 }
 

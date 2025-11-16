@@ -39,10 +39,7 @@ static int testLetStatement(Node *stmt, const char *name) {
     return 0;
   }
 
-  char actual_name[256];
-  snprintf(actual_name, sizeof(actual_name), "%.*s",
-           let_stmt->name->token.length, let_stmt->name->token.start);
-
+  sds actual_name = let_stmt->name->token.literal;
   if (strcmp(actual_name, name) != 0) {
     printf("Let statement name not '%s'. got=%s\n", name, actual_name);
     return 0;
