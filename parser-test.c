@@ -119,10 +119,51 @@ static void test_return_statements(void **state) {
   }
 }
 
+static void test_identifier_expression(void **state) {
+  (void)state;
+
+  const char *input = "foobar";
+  init_parser(input);
+  Node *program_node = parse_program();
+
+  checkParseErrors();
+
+  assert_non_null(program_node);
+
+  if (!IS_PROGRAM(program_node)) {
+    fail_msg("ParseProgram() did not return a program node");
+  }
+
+  Program *program = AS_PROGRAM(program_node);
+
+  if (program->statement_count != 1) {
+    fail_msg("program.Statements does not contain 1 statement. got=%d",
+             program->statement_count);
+  }
+
+  Node *stmt = program->statements[0];
+
+  if (!IS_EXPRESSION_STATEMENT(stmt)) {
+    fail_msg("Statement is not an expression statement");
+  }
+
+  ExpressionStatement *expr_stmt = AS_EXPRESSION_STATEMENT(stmt);
+  Node *ident_stmt = expr_stmt->expression;
+  if (!IS_IDENTIFIER(ident_stmt)) {
+    fail_msg("Expression is not an identifier");
+  }
+
+  Identifier *ident = AS_IDENTIFIER(ident_stmt);
+  if (strcmp(ident->token.literal, "foobar") != 0) {
+    fail_msg("Ident value not %s, got %s", "foobar", ident->token.literal);
+  }
+}
+
 int main(void) {
   const struct CMUnitTest tests[] = {
       cmocka_unit_test(test_let_statements),
       cmocka_unit_test(test_return_statements),
+      cmocka_unit_test(test_identifier_expression),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

@@ -16,8 +16,6 @@ static Node *parse_expression_statement();
 typedef Node *(*PrefixParseFn)();
 typedef Node *(*InfixParseFn)(Node *expression);
 
-static PrefixParseFn get_prefix_fn(TokenType token_type);
-
 void init_parser(const char *input) {
   init_lexer(input);
 
@@ -130,31 +128,26 @@ static Node *parse_return_statement() {
 }
 
 static Node *parse_expression(Precedence precedence) {
-  PrefixParseFn prefix = get_prefix_fn(parser.current_token.type);
+  PrefixParseFn prefix = prefixParseFns[parser.current_token.type];
   if (prefix == NULL) {
     return NULL;
   }
 
-  return prefix();
+  left_expression = prefix();
+  return left_expression;
 }
 
 static Node *parse_expression_statement() {
-  Node *expression_node =
-      new_expression_node(parser.current_token, parse_expression(LOWEST));
+  Node *expression_node = new_expression_node(parser.current_token,
+                                              parser.parse_expression(LOWEST));
 
   if (parser.peek_token.type == TOKEN_SEMICOLON) {
     parse_next_token();
   }
-
-  return expression_node;
 }
 
 static Node *parse_identifier() {
   return new_identifier_node(parser.current_token);
 }
 
-static PrefixParseFn prefix_parse_fns[] = {[TOKEN_IDENT] = parse_identifier};
-
-static PrefixParseFn get_prefix_fn(TokenType token_type) {
-  return prefix_parse_fns[token_type];
-}
+static PrefixParseFn prefixParseFns[] = {[TOKEN_IDENT] = parse_identifier};

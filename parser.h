@@ -16,9 +16,19 @@ typedef struct {
     int error_capacity;
 } Parser;
 
+typedef enum {
+    LOWEST,
+    EQUALS,
+    LESS_GREATER,
+    SUM,
+    PRODUCT,
+    PREFIX,
+    CALL
+} Precedence;
+
 void init_parser(const char* input);
 Node* parse_program();
-void next_token_parser();
+void parse_next_token();
 int expect_peek(TokenType type);
 void peek_error(TokenType type);
 ParseError* get_errors(int* count);

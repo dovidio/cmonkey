@@ -60,6 +60,7 @@ struct Node {
 #define IS_LET_STATEMENT(node) ((node)->type == NODE_LET_STATEMENT)
 #define IS_RETURN_STATEMENT(node) ((node)->type == NODE_RETURN_STATEMENT)
 #define IS_IDENTIFIER(node) ((node)->type == NODE_IDENTIFIER)
+#define IS_EXPRESSION_STATEMENT(node) ((node)->type == NODE_EXPRESSION_STATEMENT)
 
 #define AS_PROGRAM(node) (&(node)->as.program)
 #define AS_LET_STATEMENT(node) (&(node)->as.let_statement)
@@ -71,6 +72,7 @@ Node* new_program_node();
 Node* new_let_statement_node(Token token);
 Node* new_return_statement_node(Token token);
 Node* new_identifier_node(Token token);
+Node* new_expression_node(Token token, Node *node);
 sds node_to_string(Node *node);
 const char *token_type_to_string(TokenType type);
 void add_statement(Program *program, Node* statement);
