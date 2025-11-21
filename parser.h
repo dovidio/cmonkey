@@ -5,7 +5,7 @@
 #include "ast.h"
 
 typedef struct {
-    char* message;
+    const char* message;
 } ParseError;
 
 typedef struct {

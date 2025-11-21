@@ -1,6 +1,7 @@
 #include "ast.h"
 #include "memory.h"
 #include "sds.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -56,6 +57,17 @@ Node *new_expression_node(Token token, Node *expression) {
   ExpressionStatement *statement = AS_EXPRESSION_STATEMENT(node);
   statement->token = token;
   statement->expression = expression;
+
+  return node;
+}
+
+Node *new_integer_literal(Token token, uint64_t value) {
+  Node *node = ALLOCATE(Node, 1);
+
+  node->type = NODE_INTEGER_LITERAL;
+  IntegerLiteral *literal = AS_INTEGER_LITERAL(node);
+  literal->token = token;
+  literal->value = value;
 
   return node;
 }
@@ -172,6 +184,11 @@ sds node_to_string(Node *node) {
       return node_to_string(expressionStatement->expression);
     }
     return sdsnew("");
+  }
+  case NODE_INTEGER_LITERAL: {
+    IntegerLiteral *literal = AS_INTEGER_LITERAL(node);
+    sds s = sdsnew(literal->token.literal);
+    return s;
   }
   }
 }

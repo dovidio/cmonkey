@@ -159,11 +159,57 @@ static void test_identifier_expression(void **state) {
   }
 }
 
+static void test_integer_literal(void **state) {
+  (void)state;
+
+  const char *input = "5;";
+  init_parser(input);
+  Node *program_node = parse_program();
+
+  checkParseErrors();
+
+  assert_non_null(program_node);
+
+  if (!IS_PROGRAM(program_node)) {
+    fail_msg("ParseProgram() did not return a program node");
+  }
+
+  Program *program = AS_PROGRAM(program_node);
+
+  if (program->statement_count != 1) {
+    fail_msg("program.Statements does not contain 1 statement. got=%d",
+             program->statement_count);
+  }
+
+  Node *stmt = program->statements[0];
+
+  if (!IS_EXPRESSION_STATEMENT(stmt)) {
+    fail_msg("Statement is not an expression statement");
+  }
+
+  ExpressionStatement *expr_stmt = AS_EXPRESSION_STATEMENT(stmt);
+  Node *integer_stmt = expr_stmt->expression;
+  if (!IS_INTEGER_LITERAL(integer_stmt)) {
+    fail_msg("Expression is not an integer literal");
+  }
+
+  IntegerLiteral *integer_literal = AS_INTEGER_LITERAL(integer_stmt);
+  if (strcmp(integer_literal->token.literal, "5") != 0) {
+    fail_msg("Integer value not %s, got %s", "5",
+             integer_literal->token.literal);
+  }
+
+  if (integer_literal->value != 5) {
+    fail_msg("Integer value not %d, got %d", 5, integer_literal->value);
+  }
+}
+
 int main(void) {
   const struct CMUnitTest tests[] = {
       cmocka_unit_test(test_let_statements),
       cmocka_unit_test(test_return_statements),
       cmocka_unit_test(test_identifier_expression),
+      cmocka_unit_test(test_integer_literal),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

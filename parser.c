@@ -2,6 +2,7 @@
 #include "ast.h"
 #include "lexer.h"
 #include "memory.h"
+#include "sds.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,6 +59,20 @@ void peek_error(TokenType type) {
   snprintf(error->message, 256, "expected next token to be %s, got %s instead",
            token_type_to_string(type),
            token_type_to_string(parser.peek_token.type));
+
+  parser.error_count++;
+}
+
+void error_message(const char *message) {
+  if (parser.error_count >= parser.error_capacity) {
+    int old_capacity = parser.error_capacity;
+    parser.error_capacity = GROW_CAPACITY(old_capacity);
+    parser.errors = GROW_ARRAY(ParseError, parser.errors, old_capacity,
+                               parser.error_capacity);
+  }
+
+  ParseError *error = &parser.errors[parser.error_count];
+  error->message = message;
 
   parser.error_count++;
 }
@@ -153,7 +168,24 @@ static Node *parse_identifier() {
   return new_identifier_node(parser.current_token);
 }
 
-static PrefixParseFn prefix_parse_fns[] = {[TOKEN_IDENT] = parse_identifier};
+static Node *parse_integer() {
+  Node *integer_node = new_integer_literal(parser.current_token, -1);
+  IntegerLiteral *literal = AS_INTEGER_LITERAL(integer_node);
+  char *endptr;
+
+  uint64_t value = strtoull(parser.current_token.literal, &endptr, 10);
+
+  if (parser.current_token.literal == endptr || *endptr != '\0') {
+    error_message(sdsnew("could not parse as integer"));
+    return NULL;
+  }
+  literal->value = value;
+
+  return integer_node;
+}
+
+static PrefixParseFn prefix_parse_fns[] = {
+    [TOKEN_IDENT] = parse_identifier, [TOKEN_INT] = parse_integer};
 
 static PrefixParseFn get_prefix_fn(TokenType token_type) {
   return prefix_parse_fns[token_type];
